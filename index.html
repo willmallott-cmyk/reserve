@@ -59,6 +59,10 @@ h2{font-size:20px;margin:0;font-weight:700;min-width:0}
 .ib svg{width:18px;height:18px}
 .ib.del{color:var(--badfg)}
 .empty{text-align:center;color:var(--mute);padding:20px 0 6px}
+.bk{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px}
+.bk button{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:500;display:flex;gap:8px;align-items:center}
+.bk svg{width:18px;height:18px}
+.msg{text-align:center;color:var(--mute);font-size:14px;min-height:20px;margin-top:10px}
 .note{color:var(--mute);font-size:13px;margin-top:22px;text-align:center}
 </style>
 </head>
@@ -77,6 +81,12 @@ h2{font-size:20px;margin:0;font-weight:700;min-width:0}
 
 <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
 <div id="list"></div>
+<div class="bk">
+<button type="button" id="dl"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Download backup</button>
+<button type="button" id="rs"><svg viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg>Restore backup</button>
+<input type="file" id="file" accept="application/json,.json" hidden>
+</div>
+<div class="msg" id="msg" role="status"></div>
 <p class="note">Saved in this browser only. Items due within 30 days are flagged.</p>
 </main>
 <script>
@@ -132,6 +142,25 @@ document.addEventListener("click",e=>{
   const d=e.target.closest("[data-del]");if(d){items=items.filter(i=>String(i.id)!==d.dataset.del);save();render()}});
 document.addEventListener("change",e=>{if(e.target.classList.contains("ed")&&e.target.value){
   const it=items.find(i=>String(i.id)===e.target.dataset.id);if(it){it.exp=e.target.value;save();render()}}});
+const say=t=>{$("msg").textContent=t;setTimeout(()=>{$("msg").textContent=""},6000)};
+$("dl").onclick=()=>{
+  const blob=new Blob([JSON.stringify({app:"emergency-reserve",exported:new Date().toISOString(),items},null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=`reserve-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  say(`Backup downloaded (${items.length} item${items.length===1?"":"s"}).`)};
+$("rs").onclick=()=>$("file").click();
+$("file").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+  try{
+    const data=JSON.parse(await f.text());
+    const list=(Array.isArray(data)?data:data.items);
+    if(!Array.isArray(list))throw 0;
+    const ok=list.filter(i=>i&&typeof i.name==="string"&&CATS.includes(i.cat)&&/^\d{4}-\d{2}-\d{2}$/.test(i.exp))
+      .map(i=>({id:Date.now()+Math.random(),name:i.name.slice(0,80),cat:i.cat,exp:i.exp}));
+    if(!ok.length){say("No valid items found in that file.");return}
+    if(!confirm(`Replace your current list (${items.length}) with ${ok.length} item${ok.length===1?"":"s"} from this backup?`))return;
+    items=ok;save();render();say(`Restored ${ok.length} item${ok.length===1?"":"s"}.`);
+  }catch(err){say("That file isn't a valid backup.")}};
 render();
 </script>
 </body>
