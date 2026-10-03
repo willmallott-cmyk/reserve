@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reserve</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#e9efec;--card:#fff;--ink:#17302b;--mute:#5d7069;--line:#cfdad5;--acc:#1f6f5c;--accfg:#fff;--warn:#fff1d6;--warnfg:#8a4b00;--bad:#fde4e1;--badfg:#a3201a;--ok:#dff0e8;--okfg:#1b5c46;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a18;--card:#182623;--ink:#e4efeb;--mute:#8fa59d;--line:#2b3f3a;--acc:#4fb597;--accfg:#08201a;--warn:#3a2c10;--warnfg:#ffc766;--bad:#40201d;--badfg:#ff9b92;--ok:#16332a;--okfg:#7fd4b6}}
+:root[data-theme="dark"]{--bg:#101a18;--card:#182623;--ink:#e4efeb;--mute:#8fa59d;--line:#2b3f3a;--acc:#4fb597;--accfg:#08201a;--warn:#3a2c10;--warnfg:#ffc766;--bad:#40201d;--badfg:#ff9b92;--ok:#16332a;--okfg:#7fd4b6}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Atkinson Hyperlegible",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 18px}
+.flag{border-radius:12px;padding:14px 16px;margin-bottom:16px;background:var(--ok);color:var(--okfg);font-weight:700}
+.flag.warn{background:var(--warn);color:var(--warnfg)}
+.flag.bad{background:var(--bad);color:var(--badfg)}
+.flag ul{margin:8px 0 0;padding-left:18px;font-weight:400}
+form{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-bottom:16px}
+form .full{grid-column:1/-1}
+label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
+input,select,button{font:inherit;color:var(--ink)}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0;width:100%}
+button{cursor:pointer}
+.add{background:var(--acc);color:var(--accfg);border:0;border-radius:8px;padding:12px;font-weight:700}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px}
+.chip{flex:none;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+.chip[aria-pressed=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.item{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.item.soon{border-left-color:var(--warnfg)}.item.exp{border-left-color:var(--badfg)}
+.name{font-weight:700;overflow-wrap:anywhere}
+.meta{color:var(--mute);font-size:14px}
+.tag{font-size:13px;font-weight:700;border-radius:6px;padding:2px 8px;background:var(--ok);color:var(--okfg);justify-self:end}
+.soon .tag{background:var(--warn);color:var(--warnfg)}.exp .tag{background:var(--bad);color:var(--badfg)}
+.row2{display:flex;gap:8px;align-items:center;grid-column:1/-1;margin-top:6px}
+.row2 input{width:auto;padding:6px 8px}
+.del{margin-left:auto;background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--badfg)}
+.empty{text-align:center;color:var(--mute);padding:28px 0}
+.note{color:var(--mute);font-size:13px;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>Emergency reserve</h1>
+<p class="sub">Track what you have stored and when it needs replacing.</p>
+<div id="flag" class="flag" role="status"></div>
+
+<form id="f">
+<label class="full">Item<input id="name" required maxlength="80" placeholder="e.g. Tinned tomatoes"></label>
+<label>Category<select id="cat"></select></label>
+<label>Expiry date<input id="exp" type="date" required></label>
+<button class="add full" type="submit">Add item</button>
+</form>
+
+<div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+<div id="list"></div>
+<p class="note">Saved in this browser only. Items due within 30 days are flagged.</p>
+</main>
+<script>
+const CATS=["Food","Hygiene & medical","Pet","Household"];
+const KEY="reserve:items";
+let items=[],filter="All";
+try{items=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){items=[]}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}};
+const $=id=>document.getElementById(id);
+const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
+const days=s=>{const[y,m,d]=s.split("-").map(Number);return Math.round((new Date(y,m-1,d)-today())/864e5)};
+const status=n=>n<0?"exp":n<=30?"soon":"ok";
+const label=n=>n<0?`Expired ${-n}d ago`:n===0?"Expires today":n<=30?`${n}d left`:"OK";
+const esc=t=>t.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("cat").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("");
+$("f").onsubmit=e=>{e.preventDefault();
+  items.push({id:Date.now()+Math.random(),name:$("name").value.trim(),cat:$("cat").value,exp:$("exp").value});
+  save();$("name").value="";$("name").focus();render()};
+
+function render(){
+  const due=items.filter(i=>days(i.exp)<=30).sort((a,b)=>days(a.exp)-days(b.exp));
+  const nExp=due.filter(i=>days(i.exp)<0).length,fl=$("flag");
+  fl.className="flag"+(nExp?" bad":due.length?" warn":"");
+  fl.innerHTML=due.length
+    ?`${due.length} item${due.length>1?"s":""} expired or expiring within a month${nExp?` (${nExp} already expired)`:""}<ul>${due.map(i=>`<li>${esc(i.name)}: ${label(days(i.exp))}</li>`).join("")}</ul>`
+    :"Nothing expires in the next 30 days.";
+  $("chips").innerHTML=["All",...CATS].map(c=>`<button type="button" class="chip" aria-pressed="${c===filter}" data-c="${c}">${c}</button>`).join("");
+  const shown=items.filter(i=>filter==="All"||i.cat===filter).sort((a,b)=>a.exp.localeCompare(b.exp));
+  $("list").innerHTML=shown.length?shown.map(i=>{const n=days(i.exp),s=status(n);
+    return `<div class="item ${s}"><div><div class="name">${esc(i.name)}</div><div class="meta">${i.cat}</div></div><span class="tag">${label(n)}</span>
+    <div class="row2"><label style="display:flex;gap:6px;align-items:center;font-size:14px">Expires<input type="date" value="${i.exp}" data-id="${i.id}" class="ed" aria-label="Expiry date for ${esc(i.name)}"></label>
+    <button class="del" data-del="${i.id}" aria-label="Delete ${esc(i.name)}">Delete</button></div></div>`}).join("")
+    :`<div class="empty">No items yet. Add your first one above.</div>`;
+}
+document.addEventListener("click",e=>{
+  const c=e.target.dataset.c;if(c){filter=c;render()}
+  const d=e.target.dataset.del;if(d){items=items.filter(i=>String(i.id)!==d);save();render()}});
+document.addEventListener("change",e=>{if(e.target.classList.contains("ed")&&e.target.value){
+  const it=items.find(i=>String(i.id)===e.target.dataset.id);if(it){it.exp=e.target.value;save();render()}}});
+render();
+</script>
+</body>
+</html>
