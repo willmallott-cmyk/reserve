@@ -3,13 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Reserve</title>
+<title>Emergency reserve</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#3f4d2f">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
-:root{--bg:#e9efec;--card:#fff;--ink:#17302b;--mute:#5d7069;--line:#cfdad5;--acc:#1f6f5c;--accfg:#fff;--warn:#fff1d6;--warnfg:#8a4b00;--bad:#fde4e1;--badfg:#a3201a;--ok:#dff0e8;--okfg:#1b5c46;
+:root{--bg:#e9efec;--card:#fff;--ink:#17302b;--mute:#5d7069;--line:#cfdad5;--acc:#4a5d34;--accfg:#fff;--warn:#fff1d6;--warnfg:#8a4b00;--bad:#fde4e1;--badfg:#a3201a;--ok:#dff0e8;--okfg:#1b5c46;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a18;--card:#182623;--ink:#e4efeb;--mute:#8fa59d;--line:#2b3f3a;--acc:#4fb597;--accfg:#08201a;--warn:#3a2c10;--warnfg:#ffc766;--bad:#40201d;--badfg:#ff9b92;--ok:#16332a;--okfg:#7fd4b6}}
-:root[data-theme="dark"]{--bg:#101a18;--card:#182623;--ink:#e4efeb;--mute:#8fa59d;--line:#2b3f3a;--acc:#4fb597;--accfg:#08201a;--warn:#3a2c10;--warnfg:#ffc766;--bad:#40201d;--badfg:#ff9b92;--ok:#16332a;--okfg:#7fd4b6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a18;--card:#182623;--ink:#e4efeb;--mute:#8fa59d;--line:#2b3f3a;--acc:#a3bd75;--accfg:#16200c;--warn:#3a2c10;--warnfg:#ffc766;--bad:#40201d;--badfg:#ff9b92;--ok:#16332a;--okfg:#7fd4b6}}
+:root[data-theme="dark"]{--bg:#101a18;--card:#182623;--ink:#e4efeb;--mute:#8fa59d;--line:#2b3f3a;--acc:#a3bd75;--accfg:#16200c;--warn:#3a2c10;--warnfg:#ffc766;--bad:#40201d;--badfg:#ff9b92;--ok:#16332a;--okfg:#7fd4b6}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Atkinson Hyperlegible",system-ui,sans-serif}
@@ -42,12 +45,27 @@ button{cursor:pointer}
 .del{margin-left:auto;background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--badfg)}
 .empty{text-align:center;color:var(--mute);padding:28px 0}
 .note{color:var(--mute);font-size:13px;margin-top:20px}
+.head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.head img{width:60px;height:60px;border-radius:14px;flex:none}
+.head h1{margin:0}.head .sub{margin:2px 0 0}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:14px}
+.box>header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ico{width:40px;height:40px;border-radius:10px;background:var(--acc);color:var(--accfg);display:grid;place-items:center;flex:none}
+.ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.box h2{font-size:18px;margin:0}
+.cnt{margin-left:auto;color:var(--mute);font-size:14px;text-align:right}
+.cnt b{display:inline-block;margin-left:6px;background:var(--warn);color:var(--warnfg);border-radius:6px;padding:1px 7px}
+.box .item{background:var(--bg)}
+.box .empty{padding:10px 0}
+.btn{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.row2 .btn:first-of-type{margin-left:auto}
+.del{margin-left:0}
 </style>
 </head>
 <body>
 <main>
-<h1>Emergency reserve</h1>
-<p class="sub">Track what you have stored and when it needs replacing.</p>
+<div class="head"><img src="icon-512.png" alt=""><div><h1>Emergency reserve</h1>
+<p class="sub">Track what you have stored and when it needs replacing.</p></div></div>
 <div id="flag" class="flag" role="status"></div>
 
 <form id="f">
@@ -63,8 +81,14 @@ button{cursor:pointer}
 </main>
 <script>
 const CATS=["Food","Hygiene & medical","Pet","Household"];
+const ICONS={
+"Food":'<path d="M5 7c0-1.1 3.1-2 7-2s7 .9 7 2v10c0 1.1-3.1 2-7 2s-7-.9-7-2z"/><path d="M5 7c0 1.1 3.1 2 7 2s7-.9 7-2"/><path d="M5 12c0 1.1 3.1 2 7 2s7-.9 7-2"/>',
+"Hygiene & medical":'<rect x="3" y="7" width="18" height="13" rx="3"/><path d="M9 7V5h6v2M12 10.5v6M9 13.5h6"/>',
+"Pet":'<circle cx="6" cy="11" r="1.7"/><circle cx="9.7" cy="6.8" r="1.7"/><circle cx="14.3" cy="6.8" r="1.7"/><circle cx="18" cy="11" r="1.7"/><path d="M12 12c-3 0-5 2.5-5 4.5 0 1.7 1.5 2.5 3 2.5.8 0 1.4-.3 2-.3s1.2.3 2 .3c1.5 0 3-.8 3-2.5 0-2-2-4.5-5-4.5z"/>',
+"Household":'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'};
+const icon=c=>`<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24">${ICONS[c]}</svg></span>`;
 const KEY="reserve:items";
-let items=[],filter="All";
+let items=[],filter="All",focusId=null;
 try{items=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){items=[]}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}};
 const $=id=>document.getElementById(id);
@@ -87,15 +111,21 @@ function render(){
     ?`${due.length} item${due.length>1?"s":""} expired or expiring within a month${nExp?` (${nExp} already expired)`:""}<ul>${due.map(i=>`<li>${esc(i.name)}: ${label(days(i.exp))}</li>`).join("")}</ul>`
     :"Nothing expires in the next 30 days.";
   $("chips").innerHTML=["All",...CATS].map(c=>`<button type="button" class="chip" aria-pressed="${c===filter}" data-c="${c}">${c}</button>`).join("");
-  const shown=items.filter(i=>filter==="All"||i.cat===filter).sort((a,b)=>a.exp.localeCompare(b.exp));
-  $("list").innerHTML=shown.length?shown.map(i=>{const n=days(i.exp),s=status(n);
-    return `<div class="item ${s}"><div><div class="name">${esc(i.name)}</div><div class="meta">${i.cat}</div></div><span class="tag">${label(n)}</span>
+  const card=i=>{const n=days(i.exp),s=status(n);
+    return `<div class="item ${s}"><div class="name">${esc(i.name)}</div><span class="tag">${label(n)}</span>
     <div class="row2"><label style="display:flex;gap:6px;align-items:center;font-size:14px">Expires<input type="date" value="${i.exp}" data-id="${i.id}" class="ed" aria-label="Expiry date for ${esc(i.name)}"></label>
-    <button class="del" data-del="${i.id}" aria-label="Delete ${esc(i.name)}">Delete</button></div></div>`}).join("")
-    :`<div class="empty">No items yet. Add your first one above.</div>`;
+    <button class="btn" data-dup="${i.id}" aria-label="Duplicate ${esc(i.name)}">Duplicate</button>
+    <button class="btn del" data-del="${i.id}" aria-label="Delete ${esc(i.name)}">Delete</button></div></div>`};
+  $("list").innerHTML=CATS.filter(c=>filter==="All"||c===filter).map(c=>{
+    const mine=items.filter(i=>i.cat===c).sort((a,b)=>a.exp.localeCompare(b.exp));
+    const d=mine.filter(i=>days(i.exp)<=30).length;
+    return `<section class="box">${"<header>"+icon(c)+`<h2>${c}</h2><span class="cnt">${mine.length} item${mine.length===1?"":"s"}${d?`<b>${d} due</b>`:""}</span></header>`}
+    ${mine.length?mine.map(card).join(""):`<div class="empty">Nothing stored yet.</div>`}</section>`}).join("");
+  if(focusId){const el=document.querySelector(`.ed[data-id="${focusId}"]`);if(el){el.focus();el.scrollIntoView({block:"center"})}focusId=null}
 }
 document.addEventListener("click",e=>{
   const c=e.target.dataset.c;if(c){filter=c;render()}
+  const u=e.target.dataset.dup;if(u){const o=items.find(i=>String(i.id)===u);if(o){const n={...o,id:Date.now()+Math.random()};items.push(n);focusId=n.id;save();render()}}
   const d=e.target.dataset.del;if(d){items=items.filter(i=>String(i.id)!==d);save();render()}});
 document.addEventListener("change",e=>{if(e.target.classList.contains("ed")&&e.target.value){
   const it=items.find(i=>String(i.id)===e.target.dataset.id);if(it){it.exp=e.target.value;save();render()}}});
