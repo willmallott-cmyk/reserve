@@ -16,7 +16,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#0e130e;--bg2:#121a12;--card:#172017;--ink:#e9eee1;--mute:#93a08a;--line:#273427;--acc:#b4c98a;--accfg:#141c0c;--shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.35);--warn:#3b2e12;--warnfg:#f2c46d;--bad:#401f1b;--badfg:#ff9e94;--ok:#1d3020;--okfg:#9fd38a}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 main{max-width:620px;margin:0 auto;padding:28px 18px 56px}
 h1,h2{font-family:"Barlow Semi Condensed",Barlow,sans-serif;letter-spacing:.01em}
 .head{display:flex;align-items:center;gap:16px;margin-bottom:22px}
@@ -64,9 +64,34 @@ h2{font-size:20px;margin:0;font-weight:700;min-width:0}
 .bk svg{width:18px;height:18px}
 .msg{text-align:center;color:var(--mute);font-size:14px;min-height:20px;margin-top:10px}
 .note{color:var(--mute);font-size:13px;margin-top:22px;text-align:center}
+
+html{-webkit-text-size-adjust:100%}
+form{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:480px){form{grid-template-columns:minmax(0,1fr)}}
+input,select{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;height:46px;margin:0;line-height:1.2}
+select{padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238b9684' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+input[type=date]{text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+.dt{flex:1 1 190px;min-width:0}
+.dt input{flex:1;width:100%;max-width:210px;height:40px;padding:6px 10px}
+.acts{margin-left:auto}
+.ico{width:58px;height:58px;border-radius:15px;background:radial-gradient(120% 120% at 30% 15%,#55663f,#1f2819 70%);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -2px 6px rgba(0,0,0,.35),0 6px 14px rgba(0,0,0,.28)}
+.ico svg{width:46px;height:46px;stroke:none;stroke-width:0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+input[hidden]{display:none}
+.ico svg{width:54px;height:54px;fill:none;stroke:none;filter:none}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="gMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#585d63"/><stop offset=".22" stop-color="#e7ebef"/><stop offset=".48" stop-color="#979ea5"/><stop offset=".68" stop-color="#f5f7f9"/><stop offset="1" stop-color="#52575d"/></linearGradient>
+<linearGradient id="gOlive" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1d2518"/><stop offset=".3" stop-color="#6f8450"/><stop offset=".7" stop-color="#3a482b"/><stop offset="1" stop-color="#171d13"/></linearGradient>
+<linearGradient id="gLabel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6f1f10"/><stop offset=".32" stop-color="#df4c2c"/><stop offset=".65" stop-color="#b23a1f"/><stop offset="1" stop-color="#561509"/></linearGradient>
+<linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ee5247"/><stop offset=".55" stop-color="#c52a22"/><stop offset="1" stop-color="#8e1612"/></linearGradient>
+<linearGradient id="gKibble" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a062"/><stop offset="1" stop-color="#8a521f"/></linearGradient>
+<radialGradient id="gGlow" cx=".5" cy=".55" r=".65"><stop offset="0" stop-color="#fff2b8"/><stop offset=".4" stop-color="#ffc85a"/><stop offset=".8" stop-color="#d98a22"/><stop offset="1" stop-color="#7a4a10"/></radialGradient>
+<filter id="fBlur" x="-20%" y="-150%" width="140%" height="400%"><feGaussianBlur stdDeviation="1.8"/></filter>
+<filter id="fSoft" x="-60%" y="-40%" width="220%" height="180%"><feGaussianBlur stdDeviation="1.6"/></filter>
+</defs></svg>
 <main>
 <div class="head"><img src="icon-512.png" alt=""><div><h1>Emergency reserve</h1>
 <p class="sub">Track what you have stored and when it needs replacing.</p></div></div>
@@ -92,13 +117,13 @@ h2{font-size:20px;margin:0;font-weight:700;min-width:0}
 <script>
 const CATS=["Food","Hygiene & medical","Pet","Household"];
 const ICONS={
-"Food":'<path d="M5 7c0-1.1 3.1-2 7-2s7 .9 7 2v10c0 1.1-3.1 2-7 2s-7-.9-7-2z"/><path d="M5 7c0 1.1 3.1 2 7 2s7-.9 7-2"/><path d="M5 12c0 1.1 3.1 2 7 2s7-.9 7-2"/>',
-"Hygiene & medical":'<rect x="3" y="7" width="18" height="13" rx="3"/><path d="M9 7V5h6v2M12 10.5v6M9 13.5h6"/>',
-"Pet":'<circle cx="6" cy="11" r="1.7"/><circle cx="9.7" cy="6.8" r="1.7"/><circle cx="14.3" cy="6.8" r="1.7"/><circle cx="18" cy="11" r="1.7"/><path d="M12 12c-3 0-5 2.5-5 4.5 0 1.7 1.5 2.5 3 2.5.8 0 1.4-.3 2-.3s1.2.3 2 .3c1.5 0 3-.8 3-2.5 0-2-2-4.5-5-4.5z"/>',
-"Household":'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'};
+"Food":'<ellipse cx="32" cy="55" rx="19" ry="3.6" fill="#000" opacity=".5" filter="url(#fBlur)"/><path d="M16 21V50A16 4.5 0 0 0 48 50V21Z" fill="url(#gLabel)"/><path d="M16 26A16 4.5 0 0 0 48 26V38A16 4.5 0 0 1 16 38Z" fill="#f1e7cc" opacity=".92"/><path d="M22 31.5h20M25 34.5h14" stroke="#a8341d" stroke-width="1.7" stroke-linecap="round"/><path d="M16 45.5V50A16 4.5 0 0 0 48 50V45.5A16 4.5 0 0 1 16 45.5Z" fill="url(#gMetal)"/><path d="M16 15V21A16 4.5 0 0 0 48 21V15Z" fill="url(#gMetal)"/><ellipse cx="32" cy="15" rx="16" ry="4.5" fill="url(#gMetal)"/><ellipse cx="32" cy="15" rx="12.6" ry="3.1" fill="#c3c8cd"/><ellipse cx="32" cy="14.6" rx="4.2" ry="1.4" fill="none" stroke="#7c8288" stroke-width="1.1"/><path d="M20.5 23V47" stroke="#fff" stroke-opacity=".3" stroke-width="2.2" stroke-linecap="round"/>',
+"Hygiene & medical":'<ellipse cx="32" cy="55" rx="23" ry="3.6" fill="#000" opacity=".5" filter="url(#fBlur)"/><path d="M24 21v-4a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v4" fill="none" stroke="url(#gMetal)" stroke-width="3.4"/><rect x="9" y="20" width="46" height="33" rx="6.5" fill="url(#gRed)"/><path d="M9 31h46" stroke="#000" stroke-opacity=".28" stroke-width="1.2"/><path d="M13 22.6h38" stroke="#fff" stroke-opacity=".4" stroke-width="1.8" stroke-linecap="round"/><rect x="16" y="27.5" width="5.5" height="8" rx="1.4" fill="url(#gMetal)"/><rect x="42.5" y="27.5" width="5.5" height="8" rx="1.4" fill="url(#gMetal)"/><path d="M32 36.5v13M25.5 43h13" stroke="#000" stroke-opacity=".25" stroke-width="5.2" transform="translate(0 .9)"/><path d="M32 36.5v13M25.5 43h13" stroke="#fff" stroke-width="5"/>',
+"Pet":'<ellipse cx="32" cy="53" rx="23" ry="3.8" fill="#000" opacity=".5" filter="url(#fBlur)"/><path d="M10 30H54L48.5 48Q47.5 51.5 43.5 51.5H20.5Q16.5 51.5 15.5 48Z" fill="url(#gMetal)"/><ellipse cx="32" cy="30" rx="22" ry="5.5" fill="url(#gMetal)"/><ellipse cx="32" cy="30.4" rx="19.5" ry="4.2" fill="#34261a"/><path d="M14.5 31Q21 17.5 32 17.5T49.5 31Q32 36 14.5 31Z" fill="url(#gKibble)"/><g fill="#bf8444" stroke="#6e3f17" stroke-width=".7"><circle cx="24" cy="26" r="2.4"/><circle cx="31" cy="22.5" r="2.4"/><circle cx="38.5" cy="25.5" r="2.4"/><circle cx="28" cy="29.5" r="2.4"/><circle cx="35" cy="30" r="2.4"/><circle cx="43" cy="29.5" r="2.3"/><circle cx="19.5" cy="29.5" r="2.2"/></g><path d="M10 30A22 5.5 0 0 0 54 30H51.5A19.5 4.2 0 0 1 12.5 30Z" fill="url(#gMetal)"/><g fill="#2c3237" opacity=".6"><circle cx="26.5" cy="41" r="1.4"/><circle cx="29.8" cy="39" r="1.4"/><circle cx="34.2" cy="39" r="1.4"/><circle cx="37.5" cy="41" r="1.4"/><path d="M32 41c-2.4 0-4 1.8-4 3.2 0 1.3 1.2 1.9 2.3 1.9.6 0 1.1-.2 1.7-.2s1.1.2 1.7.2c1.1 0 2.3-.6 2.3-1.9 0-1.4-1.6-3.2-4-3.2z"/></g><path d="M17.5 36l1.6 11" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>',
+"Household":'<ellipse cx="32" cy="57" rx="19" ry="3.4" fill="#000" opacity=".5" filter="url(#fBlur)"/><path d="M23 17c0-9 18-9 18 0" fill="none" stroke="url(#gMetal)" stroke-width="2.6" stroke-linecap="round"/><rect x="27" y="11.5" width="10" height="6" rx="1.6" fill="url(#gOlive)"/><path d="M17.5 23H46.5L43 17.5H21Z" fill="url(#gOlive)"/><path d="M20 23H44L47.5 47H16.5Z" fill="url(#gGlow)"/><ellipse cx="32" cy="36" rx="5" ry="8" fill="#fffbe4" filter="url(#fSoft)"/><path d="M26.2 23L23 47M37.8 23L41 47" stroke="#161d12" stroke-opacity=".75" stroke-width="1.7"/><path d="M22 27L20.5 41" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round"/><rect x="14.5" y="47" width="35" height="7.5" rx="2.6" fill="url(#gOlive)"/><path d="M17 49.2h30" stroke="#fff" stroke-opacity=".18" stroke-width="1.2"/>'};
 const DUP='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
 const TRASH='<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
-const icon=c=>`<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24">${ICONS[c]}</svg></span>`;
+const icon=c=>`<span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">${ICONS[c]}</svg></span>`;
 const KEY="reserve:items";
 let items=[],filter="All",focusId=null;
 try{items=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){items=[]}
