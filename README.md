@@ -14,3 +14,7 @@ Open `index.html` in a browser. No build step or dependencies.
 ## Host on GitHub Pages
 
 Push to a repo, then Settings > Pages > Deploy from a branch > `main` / root.
+
+## Barcode scanning
+
+Tap "Scan barcode" to fill in an item name from its barcode (looked up in the free Open Food Facts family of databases). Needs camera permission and an internet connection. Expiry dates still need entering by hand.

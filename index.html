@@ -79,6 +79,22 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .ico svg{width:46px;height:46px;stroke:none;stroke-width:0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 input[hidden]{display:none}
 .ico svg{width:54px;height:54px;fill:none;stroke:none;filter:none}
+.scan{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--bg2);border:1px solid var(--acc);color:var(--ink);border-radius:10px;padding:12px;font-weight:600;font-size:16px}
+.scan svg{width:22px;height:22px}
+.smsg{font-size:14px;color:var(--mute);margin:-8px 2px 18px;min-height:0}
+.smsg:empty{display:none}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.modal[hidden]{display:none}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;width:100%;max-width:460px;max-height:100%;overflow:auto;box-shadow:var(--shadow)}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mh strong{font-family:"Barlow Semi Condensed",Barlow,sans-serif;font-size:20px}
+.mh button{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:500}
+#reader{width:100%;min-height:200px;border-radius:12px;overflow:hidden;background:#000}
+#reader video{width:100%!important;display:block}
+.mstat{color:var(--mute);font-size:14px;margin:10px 0}
+.mm{display:flex;gap:8px}
+.mm input{flex:1}
+.mm button{flex:none;background:var(--acc);color:var(--accfg);border:0;border-radius:10px;padding:0 16px;font-weight:600}
 </style>
 </head>
 <body>
@@ -98,11 +114,13 @@ input[hidden]{display:none}
 <div id="flag" class="flag" role="status"></div>
 
 <form id="f">
+<button type="button" class="scan full" id="scan"><svg viewBox="0 0 24 24"><path d="M4 6v12M7 6v12M11 6v12M14 6v12M17 6v12M20 6v12"/></svg>Scan barcode</button>
 <label class="full">Item<input id="name" required maxlength="80" placeholder="e.g. Tinned tomatoes"></label>
 <label>Category<select id="cat"></select></label>
 <label>Expiry date<input id="exp" type="date" required></label>
 <button class="add full" type="submit">Add item</button>
 </form>
+<div class="smsg" id="smsg" role="status"></div>
 
 <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
 <div id="list"></div>
@@ -114,6 +132,14 @@ input[hidden]{display:none}
 <div class="msg" id="msg" role="status"></div>
 <p class="note">Saved in this browser only. Items due within 30 days are flagged.</p>
 </main>
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="Scan barcode">
+<div class="sheet">
+<div class="mh"><strong>Scan barcode</strong><button type="button" id="mclose">Close</button></div>
+<div id="reader"></div>
+<p class="mstat" id="mstat" role="status"></p>
+<div class="mm"><input id="manual" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="Or type the barcode number" aria-label="Barcode number"><button type="button" id="mgo">Look up</button></div>
+</div>
+</div>
 <script>
 const CATS=["Food","Hygiene & medical","Pet","Household"];
 const ICONS={
@@ -186,6 +212,49 @@ $("file").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)r
     if(!confirm(`Replace your current list (${items.length}) with ${ok.length} item${ok.length===1?"":"s"} from this backup?`))return;
     items=ok;save();render();say(`Restored ${ok.length} item${ok.length===1?"":"s"}.`);
   }catch(err){say("That file isn't a valid backup.")}};
+/* ---- barcode scanning ---- */
+const DBS=[["world.openfoodfacts.org","Food"],["world.openbeautyfacts.org","Hygiene & medical"],["world.openpetfoodfacts.org","Pet"],["world.openproductsfacts.org","Household"]];
+let libP=null,scanner=null,busy=false;
+const loadLib=()=>libP||(libP=new Promise((res,rej)=>{
+  if(window.Html5Qrcode)return res();
+  const el=document.createElement("script");
+  el.src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
+  el.onload=res;el.onerror=()=>{libP=null;rej(new Error("load"))};document.head.appendChild(el)}));
+async function lookup(code){
+  const res=await Promise.all(DBS.map(async([h,cat])=>{
+    try{const r=await fetch(`https://${h}/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,generic_name`);
+      if(!r.ok)return null;const d=await r.json();
+      const p=d&&d.status===1&&d.product,n=p&&String(p.product_name||p.generic_name||"").trim();
+      return n?{name:n,cat}:null}catch(e){return null}}));
+  return res.find(Boolean)||null}
+const stat=t=>{$("mstat").textContent=t};
+async function closeScan(){
+  $("modal").hidden=true;busy=false;
+  if(scanner){const sc=scanner;scanner=null;try{await sc.stop()}catch(e){}try{sc.clear()}catch(e){}}}
+async function handleCode(code){
+  stat(`Looking up ${code}...`);
+  const hit=await lookup(code);
+  await closeScan();
+  $("f").scrollIntoView({behavior:"smooth",block:"start"});
+  if(hit){$("name").value=hit.name.slice(0,80);$("cat").value=hit.cat;
+    $("smsg").textContent=`Found: ${hit.name}. Check the category and set the expiry date.`;$("exp").focus()}
+  else{$("smsg").textContent=`No product found for ${code}. Type the name instead.`;$("name").focus()}}
+async function openScan(){
+  $("modal").hidden=false;$("manual").value="";stat("Starting camera...");
+  try{await loadLib()}catch(e){stat("Couldn't load the scanner (it needs an internet connection). You can type the barcode below.");return}
+  try{
+    const F=Html5QrcodeSupportedFormats;
+    scanner=new Html5Qrcode("reader",{formatsToSupport:[F.EAN_13,F.EAN_8,F.UPC_A,F.UPC_E,F.CODE_128,F.CODE_39],experimentalFeatures:{useBarCodeDetectorIfSupported:true},verbose:false});
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:150}},c=>{if(busy)return;busy=true;handleCode(c)},()=>{});
+    stat("Point the camera at a barcode.");
+  }catch(e){stat("Camera unavailable. Allow camera access in your browser, or type the barcode below.")}}
+$("scan").onclick=openScan;
+$("mclose").onclick=closeScan;
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeScan()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("modal").hidden)closeScan()});
+$("mgo").onclick=()=>{const c=$("manual").value.replace(/\D/g,"");
+  if(c.length<6){stat("Enter the full barcode number (digits only).");return}
+  if(!busy){busy=true;handleCode(c)}};
 render();
 </script>
 </body>
