@@ -17,7 +17,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-main{max-width:620px;margin:0 auto;padding:28px 18px 56px}
+main{max-width:620px;margin:0 auto;padding:28px 18px 120px}
 h1,h2{font-family:"Barlow Semi Condensed",Barlow,sans-serif;letter-spacing:.01em}
 .head{display:flex;align-items:center;gap:16px;margin-bottom:22px}
 .head img{width:68px;height:68px;border-radius:16px;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.28)}
@@ -39,7 +39,19 @@ button{cursor:pointer}
 .chip{flex:none;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 16px;font-weight:500}
 .chip[aria-pressed=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
 .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:var(--shadow)}
-.box>header{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.bh{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:0;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.box.open .bh{padding-bottom:14px;border-bottom:1px solid var(--line)}
+.h2{font-family:"Barlow Semi Condensed",Barlow,sans-serif;font-size:20px;font-weight:700;min-width:0;letter-spacing:.01em}
+.chev{width:20px;height:20px;flex:none;color:var(--mute);transition:transform .2s;fill:none;stroke:currentColor}
+[aria-expanded=true]>.chev{transform:rotate(180deg)}
+.grp{background:var(--bg2);border:1px solid var(--line);border-radius:12px;margin-top:10px;overflow:hidden}
+.gh{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;background:none;border:0;text-align:left;color:inherit;font:inherit;min-width:0;cursor:pointer}
+.gh .name{flex:1}
+.qty{flex:none;color:var(--mute);font-weight:600}
+.gsoon>.gh .tag{background:var(--warn);color:var(--warnfg)}
+.gexp>.gh .tag{background:var(--bad);color:var(--badfg)}
+.gb{padding:0 10px 10px;border-top:1px solid var(--line)}
+.gb .item{background:var(--card)}
 .ico{width:44px;height:44px;border-radius:12px;background:linear-gradient(145deg,color-mix(in srgb,var(--acc) 85%,#fff),var(--acc));color:var(--accfg);display:grid;place-items:center;flex:none}
 svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .ico svg{width:24px;height:24px}
@@ -95,6 +107,14 @@ input[hidden]{display:none}
 .mm{display:flex;gap:8px}
 .mm input{flex:1}
 .mm button{flex:none;background:var(--acc);color:var(--accfg);border:0;border-radius:10px;padding:0 16px;font-weight:600}
+[hidden]{display:none!important}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs .in{display:flex;max-width:620px;margin:0 auto;gap:2px}
+.tabs button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;border-radius:12px;padding:7px 0 6px;color:var(--mute);font-size:11.5px;font-weight:600;white-space:nowrap}
+.tabs button svg{width:22px;height:22px}
+.tabs button[aria-current=page]{color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent)}
+.ico.line svg{width:30px;height:30px;stroke:#dfe8d0;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bb>p{color:var(--mute);margin:14px 0 4px;font-size:15px}
 </style>
 </head>
 <body>
@@ -122,16 +142,19 @@ input[hidden]{display:none}
 </form>
 <div class="smsg" id="smsg" role="status"></div>
 
-<div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
 <div id="list"></div>
+<section id="settings" hidden>
+<div class="box open"><div class="bh"><span class="ico line" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></span><span class="h2">Backup</span></div>
+<div class="bb"><p>Your list is saved in this browser only. Download a backup to keep a copy, or to move your list to another phone or computer.</p>
 <div class="bk">
 <button type="button" id="dl"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Download backup</button>
 <button type="button" id="rs"><svg viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg>Restore backup</button>
 <input type="file" id="file" accept="application/json,.json" hidden>
 </div>
-<div class="msg" id="msg" role="status"></div>
-<p class="note">Saved in this browser only. Items due within 30 days are flagged.</p>
+<div class="msg" id="msg" role="status"></div></div></div>
+</section>
 </main>
+<nav class="tabs" aria-label="Sections"><div class="in" id="tabin"></div></nav>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="Scan barcode">
 <div class="sheet">
 <div class="mh"><strong>Scan barcode</strong><button type="button" id="mclose">Close</button></div>
@@ -151,7 +174,7 @@ const DUP='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx=
 const TRASH='<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
 const icon=c=>`<span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">${ICONS[c]}</svg></span>`;
 const KEY="reserve:items";
-let items=[],filter="All",focusId=null;
+let items=[],tab="All",focusId=null;
 try{items=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){items=[]}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}};
 const $=id=>document.getElementById(id);
@@ -164,8 +187,20 @@ const esc=t=>t.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&qu
 $("cat").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("");
 $("f").onsubmit=e=>{e.preventDefault();
   items.push({id:Date.now()+Math.random(),name:$("name").value.trim(),cat:$("cat").value,exp:$("exp").value});
-  save();$("name").value="";$("name").focus();render()};
+  save();openCats.add($("cat").value);saveOpen();$("name").value="";$("name").focus();render()};
 
+let openCats=new Set(),openGrp=new Set();
+try{openCats=new Set(JSON.parse(localStorage.getItem("reserve:open")||"[]"))}catch(e){}
+const saveOpen=()=>{try{localStorage.setItem("reserve:open",JSON.stringify([...openCats]))}catch(e){}};
+const gkey=i=>i.cat+"|"+i.name.trim().toLowerCase();
+const CHEV='<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+const TABS=[
+["All","All",'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'],
+["Food","Food",'<path d="M5 7c0-1.1 3.1-2 7-2s7 .9 7 2v10c0 1.1-3.1 2-7 2s-7-.9-7-2z"/><path d="M5 7c0 1.1 3.1 2 7 2s7-.9 7-2"/><path d="M5 12c0 1.1 3.1 2 7 2s7-.9 7-2"/>'],
+["Hygiene & medical","Medical",'<rect x="3" y="7" width="18" height="13" rx="3"/><path d="M9 7V5h6v2M12 10.5v6M9 13.5h6"/>'],
+["Pet","Pet",'<circle cx="6" cy="11" r="1.7"/><circle cx="9.7" cy="6.8" r="1.7"/><circle cx="14.3" cy="6.8" r="1.7"/><circle cx="18" cy="11" r="1.7"/><path d="M12 12c-3 0-5 2.5-5 4.5 0 1.7 1.5 2.5 3 2.5.8 0 1.4-.3 2-.3s1.2.3 2 .3c1.5 0 3-.8 3-2.5 0-2-2-4.5-5-4.5z"/>'],
+["Household","Home",'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'],
+["Settings","Settings",'<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>']];
 const card=i=>{const n=days(i.exp),s=status(n),nm=esc(i.name);
   return `<article class="item ${s}"><div class="top"><span class="name">${nm}</span><span class="tag">${label(n)}</span></div>
   <div class="row2"><label class="dt">Expires<input type="date" value="${i.exp}" data-id="${i.id}" class="ed" aria-label="Expiry date for ${nm}"></label>
@@ -173,23 +208,35 @@ const card=i=>{const n=days(i.exp),s=status(n),nm=esc(i.name);
   <button class="ib del" data-del="${i.id}" aria-label="Delete ${nm}" title="Delete">${TRASH}</button></div></div></article>`};
 
 function render(){
-  const due=items.filter(i=>days(i.exp)<=30).sort((a,b)=>days(a.exp)-days(b.exp));
+  const isSet=tab==="Settings",isCat=CATS.includes(tab);
+  $("flag").hidden=$("f").hidden=$("smsg").hidden=$("list").hidden=isSet;
+  $("settings").hidden=!isSet;
+  $("tabin").innerHTML=TABS.map(([k,l,p])=>`<button type="button" data-tab="${esc(k)}"${k===tab?' aria-current="page"':""}><svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>${l}</button>`).join("");
+  if(isSet)return;
+  const scope=isCat?items.filter(i=>i.cat===tab):items;
+  const due=scope.filter(i=>days(i.exp)<=30).sort((a,b)=>days(a.exp)-days(b.exp));
   const nExp=due.filter(i=>days(i.exp)<0).length,fl=$("flag");
   fl.className="flag"+(nExp?" bad":due.length?" warn":"");
   fl.innerHTML=due.length
     ?`${due.length} item${due.length>1?"s":""} expired or expiring within a month${nExp?` (${nExp} already expired)`:""}<ul>${due.map(i=>`<li>${esc(i.name)}: ${label(days(i.exp))}</li>`).join("")}</ul>`
-    :"Nothing expires in the next 30 days.";
-  $("chips").innerHTML=["All",...CATS].map(c=>`<button type="button" class="chip" aria-pressed="${c===filter}" data-c="${c}">${c}</button>`).join("");
-  $("list").innerHTML=CATS.filter(c=>filter==="All"||c===filter).map(c=>{
+    :(isCat?`Nothing in ${tab} expires in the next 30 days.`:"Nothing expires in the next 30 days.");
+  $("list").innerHTML=(isCat?[tab]:CATS).map(c=>{
     const mine=items.filter(i=>i.cat===c).sort((a,b)=>a.exp.localeCompare(b.exp));
-    const d=mine.filter(i=>days(i.exp)<=30).length;
-    return `<section class="box"><header>${icon(c)}<h2>${c}</h2><span class="cnt">${mine.length} item${mine.length===1?"":"s"}${d?`<b>${d} due</b>`:""}</span></header>
-    ${mine.length?mine.map(card).join(""):`<div class="empty">Nothing stored yet.</div>`}</section>`}).join("");
+    const d=mine.filter(i=>days(i.exp)<=30).length,isOpen=isCat||openCats.has(c),groups=new Map();
+    mine.forEach(i=>{const k=gkey(i);(groups.get(k)||groups.set(k,[]).get(k)).push(i)});
+    const body=[...groups].map(([k,g])=>{
+      if(g.length===1)return card(g[0]);
+      const n=days(g[0].exp),go=openGrp.has(k);
+      return `<div class="grp g${status(n)}"><button type="button" class="gh" data-g="${esc(k)}" aria-expanded="${go}"><span class="name">${esc(g[0].name)}</span><span class="qty">&times;${g.length}</span><span class="tag">${label(n)}</span>${CHEV}</button>${go?`<div class="gb">${g.map(card).join("")}</div>`:""}</div>`}).join("");
+    const head=`${icon(c)}<span class="h2">${c}</span><span class="cnt">${mine.length} item${mine.length===1?"":"s"}${d?`<b>${d} due</b>`:""}</span>`;
+    return `<section class="box${isOpen?" open":""}">${isCat?`<div class="bh">${head}</div>`:`<button type="button" class="bh" data-cat="${esc(c)}" aria-expanded="${isOpen}">${head}${CHEV}</button>`}${isOpen?`<div class="bb">${mine.length?body:`<div class="empty">Nothing stored yet.</div>`}</div>`:""}</section>`}).join("");
   if(focusId){const el=document.querySelector(`.ed[data-id="${focusId}"]`);if(el){el.focus();el.scrollIntoView({block:"center"})}focusId=null}
 }
 document.addEventListener("click",e=>{
-  const c=e.target.closest("[data-c]");if(c){filter=c.dataset.c;render();return}
-  const u=e.target.closest("[data-dup]");if(u){const o=items.find(i=>String(i.id)===u.dataset.dup);if(o){const n={...o,id:Date.now()+Math.random()};items.push(n);focusId=n.id;save();render()}return}
+  const tb=e.target.closest("[data-tab]");if(tb){tab=tb.dataset.tab;if(CATS.includes(tab))$("cat").value=tab;render();window.scrollTo({top:0});return}
+  const bh=e.target.closest("[data-cat]");if(bh){const k=bh.dataset.cat;openCats.has(k)?openCats.delete(k):openCats.add(k);saveOpen();render();return}
+  const gh=e.target.closest("[data-g]");if(gh){const k=gh.dataset.g;openGrp.has(k)?openGrp.delete(k):openGrp.add(k);render();return}
+  const u=e.target.closest("[data-dup]");if(u){const o=items.find(i=>String(i.id)===u.dataset.dup);if(o){const n={...o,id:Date.now()+Math.random()};items.push(n);focusId=n.id;openCats.add(o.cat);openGrp.add(gkey(o));saveOpen();save();render()}return}
   const d=e.target.closest("[data-del]");if(d){items=items.filter(i=>String(i.id)!==d.dataset.del);save();render()}});
 document.addEventListener("change",e=>{if(e.target.classList.contains("ed")&&e.target.value){
   const it=items.find(i=>String(i.id)===e.target.dataset.id);if(it){it.exp=e.target.value;save();render()}}});
