@@ -118,12 +118,12 @@ input[hidden]{display:none}
 .bb>p{color:var(--mute);margin:14px 0 4px;font-size:15px}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 14px;margin-bottom:20px}
 .tile{background:none;border:0;padding:0;text-align:center;color:inherit;font:inherit;cursor:pointer;min-width:0}
-.tile img{width:100%;aspect-ratio:1;display:block;border-radius:21%;box-shadow:0 12px 26px rgba(0,0,0,.32);transition:transform .15s}
+.tile img{width:100%;aspect-ratio:1;display:block;border-radius:50%;box-shadow:0 12px 26px rgba(0,0,0,.32);transition:transform .15s}
 .tile:active img{transform:scale(.97)}
 .tn{display:block;font-family:"Barlow Semi Condensed",Barlow,sans-serif;font-weight:700;font-size:19px;margin-top:10px;line-height:1.1}
 .tc{display:block;color:var(--mute);font-size:13px;margin-top:2px}
 .tc b{margin-left:6px;color:var(--warnfg);background:var(--warn);border-radius:6px;padding:1px 7px;font-weight:600}
-img.ico{object-fit:cover;border:0;background:none;border-radius:21%;box-shadow:0 6px 14px rgba(0,0,0,.35);padding:0}
+img.ico{object-fit:cover;border:0;background:none;border-radius:50%;box-shadow:0 6px 14px rgba(0,0,0,.35);padding:0}
 .fh{font-weight:600}
 .flag .fl{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:6px;max-height:340px;overflow:auto;font-weight:400}
 .fb{display:flex;align-items:center;gap:10px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;text-align:left;color:var(--ink);font:inherit;min-width:0}
@@ -218,7 +218,7 @@ const TABS=[
 ["Pet","Pet",'<circle cx="6" cy="11" r="1.7"/><circle cx="9.7" cy="6.8" r="1.7"/><circle cx="14.3" cy="6.8" r="1.7"/><circle cx="18" cy="11" r="1.7"/><path d="M12 12c-3 0-5 2.5-5 4.5 0 1.7 1.5 2.5 3 2.5.8 0 1.4-.3 2-.3s1.2.3 2 .3c1.5 0 3-.8 3-2.5 0-2-2-4.5-5-4.5z"/>'],
 ["Household","Household",'<path d="M9.5 3h5M12 3v2.5"/><path d="M8 8.5h8l1.5 11h-11z"/><path d="M6 21h12"/>'],
 ["Settings","Settings",'<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>']];
-const IMG={"Food":"cat-food.jpg","Hygiene & medical":"cat-medical.jpg","Pet":"cat-pet.jpg","Household":"cat-household.jpg"};
+const IMG={"Food":"cat-food.png?v=2","Hygiene & medical":"cat-medical.png?v=2","Pet":"cat-pet.png?v=2","Household":"cat-household.png?v=2"};
 const SHORT={"Hygiene & medical":"Medical"};
 const icon=c=>`<img class="ico" src="${IMG[c]}" alt="" width="62" height="62">`;
 const card=i=>{const n=days(i.exp),s=status(n),nm=esc(i.name);
